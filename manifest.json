@@ -1,9 +1,9 @@
 {
   "name": "Minhas Memórias",
   "short_name": "Memórias",
-  "start_url": "https://flaviooliveira35.github.io/memory11/index.html",
-  "scope": "/https://flaviooliveira35.github.io/memory11//",
-  "id": "/https://flaviooliveira35.github.io/memory11//",
+  "start_url": "https://flaviooliveira35.github.io/memo4.0/index.html",
+  "scope": "/https://flaviooliveira35.github.io/memo4.0//",
+  "id": "/https://flaviooliveira35.github.io/memo4.0//",
   "orientation": "portrait",
   "display": "standalone",
   "background_color": "#f4f1e8",
