@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<!--
+===================================================================================
+PAINEL DE ADMINISTRAÇÃO - DASHBOARD PRINCIPAL
+===================================================================================
+Este arquivo define a estrutura da página principal do painel de administração.
+Ele é responsável por apresentar as estatísticas globais, a lista de usuários
+para gerenciamento e os dados demográficos.
+
+Estrutura:
+- <head>: Importa dependências como Firebase, Font Awesome, Chart.js e os
+           arquivos de estilo necessários.
+- <body>:
+  - #adminScreen: O contêiner principal para todo o conteúdo do dashboard.
+    - #adminHeader: Cabeçalho fixo com o título e o botão para voltar ao app.
+    - #adminContent: O corpo principal do dashboard.
+      - #adminGlobalStats: Seção para exibir cards com estatísticas rápidas.
+      - #adminDemographicsSection: Seção para gráficos demográficos.
+      - #adminUserManagementSection: A seção mais interativa, com filtros,
+        ações em massa e a lista de usuários.
+      - #adminChartsSection: Um link para a página de gráficos detalhados.
+  - <script src="admin_dashboard.js">: O script que controla toda a lógica
+    desta página.
+===================================================================================
+-->
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Painel de Administração - Minhas Memórias</title>
+
+  <!-- === DEPENDÊNCIAS DE TERCEIROS === -->
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Courier+Prime:wght@400;700&family=Typewriter&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+  <!-- === ESTILOS DA APLICAÇÃO === -->
+  <!-- `main.css` pode conter estilos globais que são úteis aqui. `admin_dashboard.css` contém os estilos específicos. -->
+  <link rel="stylesheet" href="../../styles/main.css">
+  <link rel="stylesheet" href="admin_dashboard.css">
+</head>
+<body>
+  <!-- O contêiner principal do painel de admin, visível por padrão. -->
+  <div id="adminScreen" class="screen" style="display: block;">
+
+    <!-- Cabeçalho fixo do painel. -->
+    <header id="adminHeader">
+      <h2 style="margin:0;font-family:'Courier Prime',monospace;font-size:1.6rem;">
+        <i class="fas fa-user-cog" style="margin-right:10px;"></i>Painel de Administração
+      </h2>
+      <button id="adminScreenBackButton">
+        <i class="fas fa-arrow-left" style="margin-right:6px;"></i>Voltar ao App
+      </button>
+    </header>
+
+    <!-- Conteúdo principal do dashboard, com padding para compensar o header fixo. -->
+    <div id="adminContent" style="padding-top:76px;max-width:1200px;margin:0 auto;padding-left:25px;padding-right:25px;padding-bottom:25px;">
+
+        <!-- Seção de Estatísticas Globais -->
+        <div id="adminGlobalStats">
+            <!-- Cada .stat-item é um card com uma métrica. Os IDs são usados pelo JS para popular os dados. -->
+            <div class="stat-item"><h3><i class="fas fa-users"></i>Total de Usuários</h3><p id="totalUsersStat">-</p></div>
+            <div class="stat-item"><h3><i class="fas fa-user-circle"></i>Usuários Free</h3><p id="freeUsersStat">-</p></div>
+            <div class="stat-item"><h3><i class="fas fa-star"></i>Usuários Premium</h3><p id="premiumUsersStat">-</p></div>
+            <div class="stat-item"><h3><i class="fas fa-user-shield"></i>Administradores</h3><p id="adminUsersStat">-</p></div>
+        </div>
+        <hr class="admin-divider">
+
+        <!-- Seção de Demografia -->
+        <div id="adminDemographicsSection">
+            <h2>Resumo Demográfico</h2>
+            <div id="demographicsContent" class="demographics-container">
+                <!-- Contêiner para o gráfico de usuários por estado. -->
+                <div id="usersByStateChartContainer" class="chart-container">
+                    <h3>Usuários por Estado</h3>
+                    <canvas id="usersByStateChart"></canvas>
+                </div>
+                <!-- Card para a média de idade. -->
+                <div class="stat-item">
+                    <h3>Média de Idade</h3>
+                    <p id="averageAgeStat">-</p>
+                </div>
+            </div>
+        </div>
+        <hr class="admin-divider">
+
+        <!-- Seção de Gerenciamento de Usuários -->
+        <div id="adminUserManagementSection">
+            <h2>Gerenciamento de Usuários</h2>
+            <!-- Filtro para buscar usuários por e-mail. -->
+            <div class="admin-filter-container">
+                <label for="adminUserEmailFilter">Filtrar por E-mail:</label>
+                <input type="text" id="adminUserEmailFilter" placeholder="Digite o e-mail...">
+            </div>
+            <!-- Contêiner para as ações em massa, oculto por padrão. -->
+            <div id="bulkActionsContainer" class="bulk-actions-container" style="display: none;">
+                <h3>Ações em Massa</h3>
+                <div class="bulk-actions-controls">
+                    <button id="bulkBlockBtn" class="admin-action-btn block">Bloquear Selecionados</button>
+                    <button id="bulkUnblockBtn" class="admin-action-btn unblock">Desbloquear Selecionados</button>
+                    <div class="bulk-bonus-controls">
+                        <input type="number" id="bulkBonusAmount" placeholder="Qtd. Bônus">
+                        <input type="number" id="bulkBonusDays" placeholder="Dias">
+                        <button id="bulkApplyBonusBtn" class="admin-action-btn temp-bonus-add">Aplicar Bônus</button>
+                    </div>
+                </div>
+                <p><span id="selectedUsersCount">0</span> usuário(s) selecionado(s)</p>
+            </div>
+            <!-- Contêiner onde a tabela de usuários será renderizada pelo JavaScript. -->
+            <div id="adminUserListContainer"><p>Carregando lista de usuários...</p></div>
+        </div>
+        <hr class="admin-divider">
+
+        <!-- Seção de link para a página de gráficos detalhados. -->
+        <div id="adminChartsSection">
+          <h2>Visualização de Dados</h2>
+          <button id="viewAdminChartsBtn" class="modal-action-btn edit" style="padding: 10px 20px; font-size: 1rem; margin: 0 auto 20px; display: block; width: fit-content;">
+            <i class="fas fa-chart-pie"></i> Visualizar Gráficos Detalhados
+          </button>
+        </div>
+    </div>
+  </div>
+
+  <!-- Script que controla a lógica desta página. -->
+  <script src="admin_dashboard.js"></script>
+</body>
+</html>

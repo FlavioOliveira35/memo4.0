@@ -1,0 +1,202 @@
+/* ===================================================================================
+ * ARQUIVO DE ESTILOS RESPONSIVOS (responsive.css)
+ * ===================================================================================
+ * Este arquivo contém todas as Media Queries que ajustam o layout da aplicação
+ * para diferentes tamanhos de tela (breakpoints). A abordagem é "mobile-first"
+ * no conceito, mas o código usa `max-width`, o que significa que os estilos base
+ * são para desktop e são sobrescritos para telas menores.
+ *
+ * Breakpoints:
+ * - 768px: Alvo principal para tablets e dispositivos móveis em modo paisagem.
+ * - 480px: Alvo para smartphones em modo retrato.
+ * =================================================================================== */
+
+
+/* --- Breakpoint: Telas até 768px (Tablets e Mobile Paisagem) --- */
+@media (max-width: 768px) {
+    /* Ajustes gerais para telas menores */
+    .auth-container { margin: 5vh 20px; padding: 30px 20px; }
+    .navbar {
+        padding: 8px 10px;
+        gap: 6px;
+        overflow-x: auto; /* Garante que a navbar seja rolável horizontalmente. */
+        -webkit-overflow-scrolling: touch; /* Melhora a experiência de rolagem em iOS. */
+    }
+    .navbar button {
+        font-size: 0.7rem;
+        padding: 6px 10px;
+        flex-shrink: 0; /* Impede que os botões encolham para caber no contêiner. */
+    }
+    .postit { width: 240px; min-height: 160px; }
+    .floating-add-btn { bottom: 20px; right: 20px; width: 55px; height: 55px; font-size: 1.3rem; }
+    .modal-container { width: 95%; margin: 10px; }
+    .modal-content { padding: 20px; }
+    /* Empilha os botões dos modais verticalmente. */
+    .modal-button-group { flex-direction: column; gap: 8px; }
+    .modal-button-group button { width: 100%; }
+    .top-bar { padding: 10px 15px; }
+    #appName { font-size: 1rem; }
+
+    /* --- Lógica do Menu Hambúrguer --- */
+    .hamburger-btn {
+        display: block; /* Mostra o botão hambúrguer. */
+    }
+    /* Esconde o menu de navegação por padrão em mobile. */
+    .collapsible-menu {
+        visibility: hidden; /* Oculta o menu, mas mantém no layout para animação. */
+        opacity: 0;
+        transform: translateX(-100%); /* Move o menu para fora da tela à esquerda. */
+        transition: transform 0.3s ease-in-out, opacity 0.3s ease-in-out, visibility 0s linear 0.3s;
+        flex-direction: column;
+        align-items: stretch;
+        position: fixed; /* O menu ocupa a tela inteira abaixo do header. */
+        top: 56px; /* Altura aproximada do top-bar. */
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-color: #f9f6f0;
+        box-shadow: 0 8px 16px rgba(0,0,0,0.2);
+        z-index: 1005;
+        overflow-y: auto;
+    }
+    /* Quando a classe 'active' é adicionada via JS, o menu desliza para dentro. */
+    .collapsible-menu.active {
+        display: flex;
+        visibility: visible;
+        opacity: 1;
+        transform: translateX(0);
+        transition: transform 0.3s ease-in-out, opacity 0.3s ease-in-out;
+    }
+    /* Ajusta os itens do menu para um layout vertical. */
+    .collapsible-menu .main-nav, .collapsible-menu .user-actions {
+        flex-direction: column;
+        width: 100%;
+        gap: 0;
+        align-items: stretch;
+    }
+    /* Estilo dos links/botões dentro do menu mobile. */
+    .collapsible-menu .main-nav > a,
+    .collapsible-menu .user-actions button,
+    .collapsible-menu .user-actions .auth-button {
+        display: flex;
+        align-items: center;
+        gap: 15px;
+        width: 100%;
+        text-align: left;
+        padding: 15px 20px;
+        border-radius: 0;
+        border-bottom: 1px solid #e0d8c8;
+        font-family: 'Courier Prime', monospace;
+        font-size: 1rem;
+        color: #2c2416;
+        background-color: transparent;
+        text-decoration: none;
+        transition: background-color 0.2s ease;
+    }
+
+    .collapsible-menu .main-nav > a:hover,
+    .collapsible-menu .user-actions button:hover {
+        background-color: #e0d8c8;
+    }
+
+    .collapsible-menu .main-nav > a i {
+        width: 20px; /* Garante alinhamento dos ícones */
+        text-align: center;
+    }
+    .collapsible-menu .category-dropdown .dropdown-content a {
+        padding: 15px 20px;
+        /* ... */
+    }
+    .collapsible-menu .main-nav > a:last-of-type, .collapsible-menu .user-actions > button:last-of-type, .collapsible-menu .user-actions > .auth-button:last-of-type {
+        border-bottom: none;
+    }
+    .collapsible-menu .contact-link-mobile { margin-top: 20px; border-top: 1px solid #d2b48c; }
+
+    /* Esconde o dropdown de categorias original e mostra os botões de atalho mobile. */
+    .collapsible-menu .category-dropdown { display: none; }
+    #mobilePessoaisBtn { display: block; }
+    #headerPessoaisBtn { display: none !important; }
+    #mobileRightActionColumn { display: flex !important; bottom: 90px; right: 25px; }
+
+    /* Estilos específicos para o botão Premium na coluna de ação móvel. */
+    #headerPremiumButton.mobile-premium-icon {
+        display: flex !important;
+        background: #b08d57 !important;
+        color: white !important;
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        padding: 0;
+        font-size: 1.2rem;
+        border: 2px solid #9a7947 !important;
+        margin-bottom: 10px;
+        align-items: center;
+        justify-content: center;
+    }
+    #headerPremiumButton.mobile-premium-icon .fa-star { margin: 0; }
+    .notes-container { margin-top: 140px; }
+
+    /* Lógica de exibição do conteúdo do dropdown dentro do menu mobile ativo. */
+    .collapsible-menu.active .main-nav .category-dropdown .dropdown-btn { display: none !important; }
+    .collapsible-menu.active .main-nav { display: flex; flex-direction: column; width: 100%;}
+    .collapsible-menu.active .main-nav .category-dropdown .dropdown-content {
+        display: block;
+        position: static; /* Remove o posicionamento absoluto. */
+        box-shadow: none;
+        border: none;
+        margin-top: 0;
+        background-color: transparent;
+        width: 100%;
+        padding: 0;
+    }
+
+    /* --- Responsividade do Painel de Administração --- */
+    #adminGlobalStats { grid-template-columns: 1fr; } /* Empilha os cards de estatísticas. */
+    .admin-user-item { grid-template-columns: 1fr; gap: 10px; text-align: center; }
+    .admin-user-actions { justify-content: center; }
+    /* Força os contêineres de gráfico a empilhar verticalmente. */
+    #adminContent div[style*="display:flex"] { flex-direction: column; }
+}
+
+
+/* --- Breakpoint: Telas até 480px (Smartphones Retrato) --- */
+@media (max-width: 480px) {
+    body { font-size: 14px; }
+    .auth-container { margin: 5vh 15px; padding: 25px 15px; border-radius: 15px; }
+    .auth-container h2 { font-size: 1.6rem; }
+    .navbar { padding: 6px 8px; gap: 4px; }
+    .navbar button { font-size: 0.65rem; padding: 6px 8px; }
+
+    /* Ajusta o contêiner de notas para uma única coluna. */
+    .notes-container {
+        flex-direction: column;
+        align-items: center;
+        gap: 12px;
+        padding: 10px;
+        margin: 10px;
+        margin-top: 10px;
+        width: 260px;
+        position: absolute;
+        top: 130px;
+    }
+    .postit {
+        width: calc(100% - 6px);
+        max-width: 260px;
+        min-width: 230px;
+        transform: rotate(0deg); /* Remove a rotação padrão em telas pequenas. */
+    }
+    .postit:hover { transform: scale(1.02); }
+    .floating-add-btn { bottom: 15px; right: 15px; width: 40px; height: 40px; font-size: 1.2rem; }
+    .modal-container { width: 100%; margin: 5px; max-height: 100vh; }
+    .modal-content { padding: 15px; }
+    .modal-content textarea { min-height: 100px; padding: 12px; }
+
+    /* Oculta o contador de uso de memória para economizar espaço. */
+    #memoryUsageDisplayContainer { display: none !important; }
+
+    /* --- Responsividade do Painel de Administração para telas menores --- */
+    .admin-filter-container { flex-direction: column; align-items: stretch; }
+    .admin-filter-container input[type="text"] { width: 100%; }
+    .stat-item { padding: 15px; }
+    .stat-item p { font-size: 1.5rem; }
+}

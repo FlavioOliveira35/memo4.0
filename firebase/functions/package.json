@@ -1,0 +1,13 @@
+{
+  "name": "minhas-memorias-functions",
+  "description": "Funções do Cloud para o app Minhas Memórias",
+  "main": "index.js",
+  "dependencies": {
+    "firebase-admin": "^11.0.0",
+    "firebase-functions": "^4.0.0"
+  },
+  "private": true,
+  "engines": {
+    "node": "18"
+  }
+}

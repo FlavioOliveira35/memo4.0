@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<!--
+===================================================================================
+ARQUIVO PRINCIPAL DA APLICAÇÃO - Minhas Memórias
+===================================================================================
+Este arquivo HTML serve como o ponto de entrada único para a aplicação principal.
+Ele define a estrutura do layout, importa todas as dependências (CSS, JS, Fontes)
+e contém os contêineres para todos os modais que são exibidos dinamicamente.
+
+Estrutura Geral:
+- <head>: Contém metadados, links para folhas de estilo, fontes e importação de
+           bibliotecas de terceiros como Firebase, SortableJS, e Chart.js.
+- <body>: Contém a estrutura visível da página.
+  - #appScreen: A tela principal da aplicação que é mostrada para usuários logados.
+    - <header>: Cabeçalho fixo com o logo, menu de navegação e ações do usuário.
+    - #notes-container: Onde os post-its são renderizados dinamicamente.
+    - .floating-add-btn: Botão flutuante para adicionar novas notas.
+  - Modais: Uma série de divs com a classe `.modal-overlay`. Cada uma representa
+            um modal diferente (nova nota, confirmação, gerenciamento, etc.).
+            Eles ficam ocultos por padrão e são ativados via JavaScript.
+  - Scripts: A importação dos scripts da aplicação, com o atributo `defer` para
+             garantir que o HTML seja parseado antes da execução dos scripts.
+===================================================================================
+-->
+<html lang="pt-BR">
+<head>
+  <!-- Metadados essenciais -->
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Minhas Memórias</title>
+
+  <!-- === DEPENDÊNCIAS DE TERCEIROS === -->
+  <!-- Firebase SDK (Software Development Kit) -->
+  <!-- Importa os serviços do Firebase necessários: app (núcleo), auth (autenticação), firestore (banco de dados) e messaging (notificações). -->
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-messaging-compat.js"></script>
+
+  <!-- Script de inicialização do Firebase Messaging -->
+  <script src="firebase/firebase-messaging-init.js"></script>
+
+  <!-- SortableJS: Biblioteca para criar listas arrastáveis (drag-and-drop). Usada para reordenar abas e notas. -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.15.0/Sortable.min.js"></script>
+
+  <!-- Font Awesome: Biblioteca de ícones. -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+  <!-- Google Fonts: Para a tipografia com estilo de máquina de escrever. -->
+  <link href="https://fonts.googleapis.com/css2?family=Courier+Prime:wght@400;700&family=Typewriter&display=swap" rel="stylesheet">
+
+  <!-- Manifest e Favicon: Essenciais para Progressive Web App (PWA) e identidade visual. -->
+  <link rel="manifest" href="manifest.json">
+  <link rel="icon" href="IMG/favicon.png" type="image/png">
+
+  <!-- Chart.js: Biblioteca para criar gráficos, usada no painel de administração. -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+  <!-- === ESTILOS DA APLICAÇÃO === -->
+  <!-- A ordem é importante: main (base), postit, modal (componentes), responsive (ajustes finais). -->
+  <link rel="stylesheet" href="styles/main.css">
+  <link rel="stylesheet" href="styles/postit.css">
+  <link rel="stylesheet" href="styles/modal.css">
+  <link rel="stylesheet" href="styles/responsive.css">
+</head>
+<body>
+
+  <!-- =============================================================================== -->
+  <!-- TELA PRINCIPAL DA APLICAÇÃO (#appScreen)                                        -->
+  <!-- =============================================================================== -->
+  <!-- Esta é a view principal que o usuário vê após o login. -->
+  <div id="appScreen" class="screen">
+
+    <!-- Cabeçalho Fixo -->
+    <header>
+      <!-- Barra Superior: Contém logo, menu e ações primárias. -->
+      <div class="top-bar">
+        <div class="logo-area">
+          <span id="appName"><i class="fas fa-brain"></i> Minhas Memorias</span>
+          <!-- Contêiner para exibir o uso de memória (notas usadas / limite). -->
+          <div id="memoryUsageDisplayContainer">Memorias Usadas: <span id="usedMemoryCount">-</span>/<span id="totalMemoryLimit">-</span></div>
+        </div>
+        <!-- Botões de ação que aparecem em diferentes tamanhos de tela. -->
+        <button id="mobilePessoaisBtn" class="mobile-action-btn" title="Acessar Pessoais"><i class="fas fa-user"></i></button>
+        <button class="hamburger-btn"><i class="fas fa-bars"></i></button>
+        <!-- Menu Colapsável (hambúrguer em mobile, visível em desktop) -->
+        <div class="collapsible-menu">
+          <nav class="main-nav">
+            <!-- Dropdown de Categorias/Temas é populado dinamicamente por JS. -->
+            <div class="category-dropdown">
+              <button class="dropdown-btn"><span class="btn-text">Categorias</span> <i class="fas fa-chevron-down"></i></button>
+              <div class="dropdown-content"></div>
+            </div>
+          </nav>
+          <!-- Ações do Usuário (Gerenciar Abas, Sair) -->
+          <div class="user-actions">
+            <button id="headerPessoaisBtn" class="user-action-btn perso-btn"><i class="fas fa-sticky-note"></i> Pessoais</button>
+            <button onclick="logout()" class="header-logout-btn-new"><i class="fas fa-sign-out-alt"></i> Sair</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Barra de Navegação Principal (para Abas Pessoais) -->
+      <!-- Wrapper para o carrossel. -->
+      <div id="navbarWrapper" class="navbar-wrapper">
+        <button class="scroll-arrow left-arrow" style="display: none;"><i class="fas fa-chevron-left"></i></button>
+        <nav class="navbar" id="navbar"></nav> <!-- Conteúdo populado por JS. -->
+        <button class="scroll-arrow right-arrow" style="display: none;"><i class="fas fa-chevron-right"></i></button>
+      </div>
+
+      <!-- Barra de Navegação Secundária (para Subtemas) -->
+      <!-- Fica oculta (`display:none`) até que um tipo de tema seja selecionado. -->
+      <div id="secondaryNavbarWrapper" class="navbar-wrapper" style="display:none;">
+        <button class="scroll-arrow left-arrow" style="display: none;"><i class="fas fa-chevron-left"></i></button>
+        <nav id="secondaryNavbar" class="navbar"></nav> <!-- Conteúdo populado por JS. -->
+        <button class="scroll-arrow right-arrow" style="display: none;"><i class="fas fa-chevron-right"></i></button>
+      </div>
+    </header>
+
+    <!-- Botão Flutuante de Ação (FAB) para adicionar nova nota. -->
+    <button class="floating-add-btn" onclick="openModal()" title="Adicionar nova memória">
+      <i class="fas fa-plus icon-plus"></i><i class="fas fa-brain icon-brain"></i>
+    </button>
+
+    <!-- Contêiner Principal para as Notas (Post-its) -->
+    <!-- Este div é preenchido dinamicamente pelo JavaScript com as notas do usuário. -->
+    <div class="notes-container" id="notes"></div>
+  </div>
+
+  <!-- Coluna de Ação Direita para Mobile -->
+  <!-- Contém atalhos de ícones para categorias em telas pequenas. -->
+  <div id="mobileRightActionColumn" style="display:none;position:fixed;bottom:100px;right:20px;z-index:999;flex-direction:column;align-items:center;gap:10px;">
+    <div id="mobileCategoryIconsContainer" style="display:flex;flex-direction:column;align-items:center;gap:8px;"></div>
+  </div>
+
+
+  <!-- =============================================================================== -->
+  <!-- SEÇÃO DE MODAIS (Overlays)                                                      -->
+  <!-- =============================================================================== -->
+  <!-- Todos os modais são definidos aqui. Eles ocupam a tela inteira com um fundo   -->
+  <!-- translúcido e são controlados (exibidos/ocultos) via JavaScript.              -->
+  <!-- Usar um ID único para cada overlay é uma boa prática para selecioná-los.      -->
+
+  <!-- Modal: Adicionar Nova Memória -->
+  <div id="modalOverlay" class="modal-overlay">
+    <div class="modal-container">
+      <div class="modal-header"><span><i class="fas fa-sticky-note"></i> Nova Memória</span><button class="modal-close-btn" onclick="closeModal()"><i class="fas fa-times"></i></button></div>
+      <div class="modal-content">
+        <textarea id="noteText" placeholder="✍️ Escreva sua memória aqui..."></textarea>
+        <div id="themeNoteCustomization"></div> <!-- Para customizações futuras -->
+        <div class="modal-date-container"><label for="noteDueDate"><i class="fas fa-calendar-alt"></i> Lembrar em:</label><input type="date" id="noteDueDate"></div>
+        <div class="modal-button-group">
+          <button onclick="closeModal()" class="cancel-btn"><i class="fas fa-times"></i> Cancelar</button>
+          <button onclick="addNote()" class="add-btn"><i class="fas fa-plus"></i> Add Memória</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal: Confirmação Genérica (Excluir, etc.) -->
+  <div id="confirmationModalOverlay" class="modal-overlay">
+    <div class="modal-container">
+      <div class="modal-header"><span id="confirmationModalTitle">Confirmar Ação</span><button class="modal-close-btn" onclick="closeConfirmationModal()"><i class="fas fa-times"></i></button></div>
+      <div class="modal-content">
+        <p id="confirmationModalMessage" style="margin-bottom:20px;font-size:1rem;color:#2c2416;"></p>
+        <div class="modal-button-group">
+          <button onclick="cancelConfirmation()" class="cancel-btn"><i class="fas fa-times"></i> Cancelar</button>
+          <button onclick="confirmAction()" class="add-btn" id="confirmActionButton"><i class="fas fa-check"></i> Confirmar</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal: Inserir Nome do Tema (substituído por um modal mais completo) -->
+  <!-- SUGESTÃO: Este modal parece ser um legado. Se `manageSubthemesModalOverlay` o substituiu, este pode ser removido para simplificar. -->
+  <div id="themeNameModalOverlay" class="modal-overlay">
+    <div class="modal-container">
+      <div class="modal-header"><span id="themeNameModalTitle"></span><button class="modal-close-btn" onclick="closeThemeNameModal()"><i class="fas fa-times"></i></button></div>
+      <div class="modal-content"><input type="text" id="themeNameInput" placeholder="Digite o nome aqui..."><div class="modal-button-group"><button onclick="closeThemeNameModal()" class="cancel-btn"><i class="fas fa-times"></i> Cancelar</button><button onclick="saveThemeName()" class="add-btn"><i class="fas fa-save"></i> Salvar</button></div></div>
+    </div>
+  </div>
+
+  <!-- Modal: Painel de Admin (visualização rápida) -->
+  <!-- NOTA: Este modal parece ter sido substituído por uma página de dashboard dedicada. Pode ser um legado. -->
+  <div id="adminPanelModalOverlay" class="modal-overlay">
+    <div class="modal-container admin-modal-container">
+      <div class="modal-header"><span><i class="fas fa-user-cog"></i> Painel Administrativo</span><button class="modal-close-btn" onclick="closeAdminModal()"><i class="fas fa-times"></i></button></div>
+      <div class="modal-content admin-modal-content"><div class="admin-stats"><p>Usuários Free: <span id="adminFreeUserCount">-</span></p><p>Usuários Premium: <span id="adminPremiumUserCount">-</span></p></div><hr class="admin-divider"><div class="admin-user-list-container"><h3>Lista de Usuários:</h3><div id="adminUserList" class="admin-user-list"><p>Carregando usuários...</p></div></div></div>
+    </div>
+  </div>
+
+  <!-- Modal: Upgrade para Premium -->
+  <div id="premiumUpgradeModalOverlay" class="modal-overlay">
+    <div class="modal-container premium-upgrade-modal-container">
+      <div class="modal-header"><span><i class="fas fa-rocket"></i> Desbloqueie Memórias Ilimitadas!</span><button class="modal-close-btn" onclick="closePremiumUpgradeModal()"><i class="fas fa-times"></i></button></div>
+      <div class="modal-content premium-upgrade-modal-content"><i class="fas fa-gem" style="font-size:3.5em;color:#8b4513;text-align:center;display:block;margin-bottom:20px;"></i><h3>Você atingiu o limite de 20 memórias gratuitas!</h3><p>Com o plano Premium, você pode registrar quantas memórias quiser, sem limites!</p><p>Apenas R$4,99 por mês!</p><div class="modal-button-group"><button onclick="handlePremiumPurchase()" class="add-btn premium-purchase-btn"><i class="fas fa-credit-card"></i> Quero ser Premium!</button><button onclick="closePremiumUpgradeModal()" class="cancel-btn">Fechar</button></div><p id="premiumPurchaseInfo" style="display:none;">A integração com o sistema de pagamento estará disponível em breve!</p></div>
+    </div>
+  </div>
+
+  <!-- Modal: Gerenciar Tipos de Tema -->
+  <div id="manageThemeTypesModalOverlay" class="modal-overlay">
+    <div class="modal-container" style="max-width:600px;"><div class="modal-header"><span><i class="fas fa-palette"></i> Gerenciar Tipos de Tema</span><button class="modal-close-btn" onclick="closeManageThemeTypesModal()"><i class="fas fa-times"></i></button></div><div class="modal-content"><button id="openAddThemeTypeModalBtn" class="add-btn"><i class="fas fa-plus"></i> Adicionar Novo Tipo de Tema</button><div id="themeTypesListContainer"><p>Carregando...</p></div><div class="modal-button-group" style="margin-top:20px;"><button onclick="closeManageThemeTypesModal()" class="cancel-btn" style="flex-grow:0.5;">Fechar</button></div></div></div>
+  </div>
+
+  <!-- Modal: Gerenciar Subtemas -->
+  <div id="manageSubthemesModalOverlay" class="modal-overlay">
+    <div class="modal-container" style="max-width:600px;"><div class="modal-header"><span id="manageSubthemesModalTitle"><i class="fas fa-stream"></i> Gerenciar Subtemas</span><button class="modal-close-btn" onclick="closeManageSubthemesModal()"><i class="fas fa-times"></i></button></div><div class="modal-content"><div class="add-item-form"><input type="text" id="newSubthemeNameInput" placeholder="Nome do novo subtema..."><button id="addSubthemeBtn"><i class="fas fa-plus"></i> Adicionar</button></div><div id="subthemesListContainer"><p>Carregando...</p></div><div class="modal-button-group" style="margin-top:20px;"><button onclick="closeManageSubthemesModal()" class="cancel-btn" style="flex-grow:0.5;">Fechar</button></div></div></div>
+  </div>
+
+  <!-- Modal: Editar Nome do Subtema -->
+  <div id="editSubthemeModalOverlay" class="modal-overlay">
+    <div class="modal-container" style="max-width:500px;">
+      <div class="modal-header">
+        <span id="editSubthemeModalTitle"><i class="fas fa-edit"></i> Editar Nome do Subtema</span>
+        <button class="modal-close-btn" onclick="closeEditSubthemeModal()"><i class="fas fa-times"></i></button>
+      </div>
+      <div class="modal-content">
+        <input type="hidden" id="editingSubthemeId" value="">
+        <label for="editSubthemeNameInput">Novo nome:</label>
+        <input type="text" id="editSubthemeNameInput" placeholder="Digite o novo nome...">
+        <div class="modal-button-group">
+          <button onclick="closeEditSubthemeModal()" class="cancel-btn"><i class="fas fa-times"></i> Cancelar</button>
+          <button id="saveSubthemeNameBtn" class="add-btn"><i class="fas fa-save"></i> Salvar</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal: Editar/Adicionar Tipo de Tema -->
+  <div id="themeTypeEditModalOverlay" class="modal-overlay">
+    <div class="modal-container" style="max-width:500px;"><div class="modal-header"><span id="themeTypeEditModalTitle">Adicionar Tipo de Tema</span><button class="modal-close-btn" onclick="closeThemeTypeEditModal()"><i class="fas fa-times"></i></button></div><div class="modal-content"><input type="hidden" id="editingThemeTypeId" value=""><label for="themeTypeNameInput">Nome do Tipo de Tema:</label><input type="text" id="themeTypeNameInput" placeholder="Ex: Receitas, Projetos Fitness"><label>Ícone:</label><div id="themeTypeIconGrid"></div><input type="hidden" id="selectedThemeTypeIcon" value="fa-folder"><label>Cor dos Post-its:</label><div id="themeTypeColorPalette"></div><input type="hidden" id="selectedThemeTypeColor" value="default-yellow"><div class="modal-button-group"><button onclick="closeThemeTypeEditModal()" class="cancel-btn"><i class="fas fa-times"></i> Cancelar</button><button id="saveThemeTypeBtn" class="add-btn"><i class="fas fa-save"></i> Salvar Tipo</button></div></div></div>
+  </div>
+
+  <!-- Modal: Gerenciar Abas Pessoais -->
+  <div id="managePersonalTabsModalOverlay" class="modal-overlay">
+    <div class="modal-container" style="max-width:600px;"><div class="modal-header"><span><i class="fas fa-user-cog"></i> Gerenciar Minhas Abas Pessoais</span><button class="modal-close-btn" onclick="closeManagePersonalTabsModal()"><i class="fas fa-times"></i></button></div><div class="modal-content"><button id="openAddPersonalTabModalBtn" class="add-btn"><i class="fas fa-plus"></i> Adicionar Nova Aba Pessoal</button><div id="personalTabsListContainer"><p>Carregando...</p></div><div class="modal-button-group" style="margin-top:20px;"><button onclick="closeManagePersonalTabsModal()" class="cancel-btn" style="flex-grow:0.5;">Fechar</button></div></div></div>
+  </div>
+
+  <!-- Modal: Editar/Adicionar Aba Pessoal -->
+  <div id="personalTabEditModalOverlay" class="modal-overlay">
+    <div class="modal-container" style="max-width:500px;"><div class="modal-header"><span id="personalTabEditModalTitle">Adicionar Nova Aba</span><button class="modal-close-btn" onclick="closePersonalTabEditModal()"><i class="fas fa-times"></i></button></div><div class="modal-content"><input type="hidden" id="editingPersonalTabId" value=""><label for="personalTabNameInput">Nome da Aba (Emojis 🎉):</label><input type="text" id="personalTabNameInput" placeholder="Ex: Meus Projetos 🚀"><label>Cor do Post-it:</label><div id="personalTabColorPalette"></div><input type="hidden" id="selectedPersonalTabColor" value=""><label>Ícone da Aba:</label><div id="personalTabIconGrid"></div><input type="hidden" id="selectedPersonalTabIcon" value="fas fa-sticky-note"><div class="modal-button-group"><button onclick="closePersonalTabEditModal()" class="cancel-btn"><i class="fas fa-times"></i> Cancelar</button><button id="savePersonalTabBtn" class="add-btn"><i class="fas fa-save"></i> Salvar Aba</button></div></div></div>
+  </div>
+
+  <!-- Modal: Resumo da Aba/Tema -->
+  <div id="summaryModalOverlay" class="modal-overlay">
+    <div class="modal-container" style="max-width:700px;"><div class="modal-header"><span id="summaryModalTitle"><i class="fas fa-file-alt"></i> Resumo da Aba</span><button class="modal-close-btn" onclick="closeSummaryModal()"><i class="fas fa-times"></i></button></div><div class="modal-content"><div id="summaryContent"></div><div class="modal-button-group"><button onclick="copySummaryToClipboard()" class="add-btn" id="copySummaryBtn"><i class="fas fa-copy"></i> Copiar Conteúdo</button><button onclick="closeSummaryModal()" class="cancel-btn">Fechar</button></div></div></div>
+  </div>
+
+
+  <!-- =============================================================================== -->
+  <!-- SCRIPTS DA APLICAÇÃO                                                            -->
+  <!-- =============================================================================== -->
+  <!-- O atributo `defer` garante que o HTML seja completamente carregado e parseado -->
+  <!-- antes que o navegador execute estes scripts. A ordem de importação é       -->
+  <!-- importante, pois os scripts podem ter dependências entre si.                -->
+  <script src="scripts/state.js" defer></script>
+  <script src="scripts/firebase-config.js" defer></script>
+  <script src="scripts/ui.js" defer></script>
+  <script src="scripts/theme-manager.js" defer></script>
+  <script src="scripts/app.js" defer></script>
+  <script src="scripts/auth.js" defer></script>
+
+  <!-- Script inline para registrar o Service Worker. -->
+  <script>
+    // Verifica se o navegador suporta Service Workers.
+    if ('serviceWorker' in navigator) {
+      // O registro é feito após o carregamento completo da página.
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('/service-worker.js')
+          .then((registration) => {
+            console.log('Service Worker registrado com sucesso:', registration);
+          })
+          .catch(error => {
+            console.log('Falha ao registrar Service Worker:', error);
+          });
+      });
+    }
+  </script>
+</body>
+</html>

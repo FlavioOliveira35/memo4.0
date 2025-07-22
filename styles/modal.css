@@ -1,0 +1,505 @@
+/* ===================================================================================
+ * ARQUIVO DE ESTILOS DOS MODAIS (modal.css)
+ * ===================================================================================
+ * Este arquivo centraliza todos os estilos relacionados aos modais da aplicação.
+ * Manter os estilos dos modais separados ajuda na organização e facilita a
+ * manutenção de um visual consistente entre eles.
+ *
+ * Seções:
+ * 1. Estilos do Overlay (fundo do modal)
+ * 2. Estilos do Contêiner Principal do Modal
+ * 3. Estilos do Conteúdo Interno (Inputs, Botões)
+ * 4. Estilos para Botões de Ação Específicos (Editar, Deletar)
+ * 5. Animações e Classes Utilitárias
+ * =================================================================================== */
+
+
+/* --- 1. Estilos do Overlay (fundo do modal) --- */
+
+/* O overlay é a camada de fundo que cobre a página inteira quando um modal está ativo. */
+.modal-overlay {
+    position: fixed; /* Fixo na viewport, não rola com a página. */
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.6); /* Fundo preto semitransparente. */
+    backdrop-filter: blur(5px); /* Efeito de desfoque no conteúdo atrás do modal (suporte varia entre navegadores). */
+    z-index: 2000; /* z-index alto para garantir que fique acima de todo o resto. */
+    display: none; /* Oculto por padrão. */
+    align-items: center; /* Centraliza o .modal-container verticalmente. */
+    justify-content: center; /* Centraliza o .modal-container horizontalmente. */
+    animation: fadeIn 0.3s ease; /* Animação de entrada suave. */
+}
+
+/* Regra específica para o modal de confirmação, garantindo que ele apareça
+   sobre outros modais que possam estar abertos. */
+#confirmationModalOverlay {
+    z-index: 2001;
+}
+
+/* A classe 'active' é adicionada via JS para exibir o modal. */
+.modal-overlay.active {
+    display: flex;
+}
+
+
+/* --- 2. Estilos do Contêiner Principal do Modal --- */
+
+/* O .modal-container é a "caixa" branca que contém o conteúdo do modal. */
+.modal-container {
+    background: #f9f6f0; /* Cor de papel antigo/creme. */
+    border-radius: 12px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3); /* Sombra para dar profundidade. */
+    border: 3px solid #8b4513; /* Borda com a cor de tema principal. */
+    width: 90%; /* Ocupa 90% da largura em telas pequenas. */
+    max-width: 500px; /* Limite máximo de largura em telas grandes. */
+    max-height: 80vh; /* Limite máximo de altura para evitar que o modal saia da tela. */
+    overflow-y: auto; /* Adiciona uma barra de rolagem se o conteúdo for maior que a altura máxima. */
+    position: relative; /* Necessário para o posicionamento de elementos filhos. */
+    animation: slideInUp 0.4s ease; /* Animação de "deslizar para cima" na entrada. */
+}
+
+.modal-header {
+    background: #8b4513;
+    /* Padrão listrado sutil no cabeçalho. */
+    background-image: linear-gradient(45deg, #8b4513 25%, #a0522d 25%, #a0522d 50%, #8b4513 50%, #8b4513 75%, #a0522d 75%);
+    background-size: 20px 20px;
+    color: #f4f1e8;
+    padding: 15px 20px;
+    border-radius: 9px 9px 0 0; /* Arredonda apenas os cantos superiores. */
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-weight: 700;
+    font-size: 1.2rem;
+}
+
+.modal-close-btn {
+    background: none;
+    border: none;
+    color: #f4f1e8;
+    font-size: 1.5rem;
+    cursor: pointer;
+    padding: 5px;
+    border-radius: 4px;
+    transition: all 0.3s ease;
+}
+
+.modal-close-btn:hover {
+    background: rgba(255, 255, 255, 0.2); /* Feedback visual sutil no hover. */
+    transform: scale(1.1);
+}
+
+
+/* --- 3. Estilos do Conteúdo Interno (Inputs, Botões) --- */
+
+.modal-content {
+    padding: 25px;
+    position: relative;
+}
+
+/* Efeito de "folha de caderno" com linhas, usando um pseudo-elemento. */
+.modal-content::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-image: linear-gradient(90deg, transparent 79px, #d2b48c 79px, #d2b48c 81px, transparent 81px), linear-gradient(#f9f6f0 0px, transparent 1px);
+    background-size: 82px 20px;
+    opacity: 0.3;
+    pointer-events: none; /* Garante que as linhas não interfiram com cliques no conteúdo. */
+    border-radius: 0 0 9px 9px;
+}
+
+.modal-content textarea {
+    width: 100%;
+    padding: 15px;
+    border: 2px solid #d2b48c;
+    border-radius: 8px;
+    font-size: 1rem;
+    min-height: 120px;
+    resize: vertical; /* Permite que o usuário redimensione a altura do textarea. */
+    margin-bottom: 15px;
+    font-family: 'Courier Prime', monospace;
+    transition: all 0.3s ease;
+    background: #fff;
+    color: #2c2416;
+    position: relative;
+    z-index: 1; /* Garante que o textarea fique acima do pseudo-elemento de linhas. */
+}
+
+.modal-content textarea:focus {
+    outline: none;
+    border-color: #8b4513;
+    box-shadow: 0 0 0 2px rgba(139, 69, 19, 0.2); /* Efeito de "glow" para indicar foco. */
+}
+
+.modal-date-container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    margin-bottom: 20px;
+    padding: 12px;
+    background: rgba(210, 180, 140, 0.2);
+    border-radius: 8px;
+    border: 1px solid #d2b48c;
+    position: relative;
+    z-index: 1;
+}
+
+.modal-date-container label {
+    color: #2c2416;
+    font-weight: 700;
+    font-size: 0.9rem;
+}
+
+.modal-date-container input[type="date"] {
+    padding: 6px 10px;
+    border: 2px solid #d2b48c;
+    border-radius: 6px;
+    font-size: 0.9rem;
+    color: #2c2416;
+    background: white;
+    transition: all 0.3s ease;
+    font-family: 'Courier Prime', monospace;
+}
+
+.modal-date-container input[type="date"]:focus {
+    outline: none;
+    border-color: #8b4513;
+    box-shadow: 0 0 0 2px rgba(139, 69, 19, 0.2);
+}
+
+.modal-button-group {
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+    align-items: center;
+    position: relative;
+    z-index: 1;
+}
+
+.modal-button-group button {
+    padding: 12px 20px;
+    border: 2px solid #8b4513;
+    border-radius: 8px;
+    font-size: 0.9rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-family: 'Courier Prime', monospace;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    flex: 1; /* Faz com que os botões dividam o espaço igualmente. */
+    justify-content: center;
+}
+
+.modal-button-group button.add-btn {
+    background: #633b06;
+    color: white;
+}
+
+.modal-button-group button.add-btn:hover {
+    background: #633b0680;
+    color: #633b06;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(34, 139, 34, 0.3);
+}
+
+.modal-button-group button.cancel-btn {
+    background: #f7f2ed;
+    color: rgb(114, 56, 17);
+}
+
+.modal-button-group button.cancel-btn:hover {
+    background: #ad4805d5;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(220, 20, 60, 0.3);
+}
+
+/* Estilo para formulário de adição rápida (input e botão lado a lado) */
+.add-item-form {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 20px;
+    position: relative;
+    z-index: 1; /* Garante que fique acima das linhas do pseudo-elemento */
+}
+
+.add-item-form input[type="text"] {
+    flex-grow: 1;
+    padding: 12px 15px;
+    border: 2px solid #d2b48c;
+    border-radius: 8px;
+    font-size: 1rem;
+    font-family: 'Courier Prime', monospace;
+    transition: all 0.3s ease;
+    background: #fff;
+    color: #2c2416;
+}
+
+.add-item-form input[type="text"]:focus {
+    outline: none;
+    border-color: #8b4513;
+    box-shadow: 0 0 0 2px rgba(139, 69, 19, 0.2);
+}
+
+.add-item-form button {
+    padding: 12px 20px;
+    border: 2px solid #8b4513;
+    border-radius: 8px;
+    font-size: 0.9rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-family: 'Courier Prime', monospace;
+    text-transform: uppercase;
+    flex-shrink: 0; /* Impede que o botão encolha */
+    background: #633b06;
+    color: white;
+}
+
+.add-item-form button:hover {
+    background: #633b0680;
+    color: #633b06;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(34, 139, 34, 0.3);
+}
+
+
+/* --- 4. Estilos para Botões de Ação Específicos (Editar, Deletar) --- */
+/* Usados dentro de listas em modais, como na tela de "Gerenciar Temas". */
+
+#managePersonalTabsModalOverlay .add-btn,
+#manageThemeTypesModalOverlay .add-btn {
+    width: 100%;
+    padding: 12px 20px;
+    border: 2px solid #8b4513;
+    border-radius: 8px;
+    font-size: 0.9rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-family: 'Courier Prime', monospace;
+    text-transform: uppercase;
+    justify-content: center;
+    background: #633b06;
+    color: white;
+    margin-bottom: 20px;
+}
+
+#managePersonalTabsModalOverlay .add-btn:hover,
+#manageThemeTypesModalOverlay .add-btn:hover {
+    background: #633b0680;
+    color: #633b06;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(34, 139, 34, 0.3);
+}
+
+.modal-action-btn {
+    padding: 6px 12px;
+    border-radius: 4px;
+    border: 1px solid transparent;
+    cursor: pointer;
+    font-family: 'Courier Prime', monospace;
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    transition: all 0.2s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.modal-action-btn i {
+    font-size: 0.9em;
+}
+
+.modal-action-btn.edit {
+    background-color: #3498db; /* Azul para edição. */
+    color: white;
+    border-color: #2980b9;
+}
+
+.modal-action-btn.edit:hover {
+    background-color: #2980b9;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.15);
+}
+
+.modal-action-btn.delete {
+    background-color: #e74c3c; /* Vermelho para exclusão. */
+    color: white;
+    border-color: #c0392b;
+}
+
+.modal-action-btn.delete:hover {
+    background-color: #c0392b;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.15);
+}
+
+/* --- Estilos para Modais de Edição (Tipo de Tema e Aba Pessoal) --- */
+
+#themeTypeEditModalOverlay .modal-content label,
+#personalTabEditModalOverlay .modal-content label {
+    display: block;
+    margin-bottom: 8px;
+    margin-top: 15px;
+    color: #633b06;
+    font-weight: 700;
+    font-family: 'Courier Prime', monospace;
+    position: relative;
+    z-index: 1;
+}
+
+#themeTypeEditModalOverlay .modal-content input[type="text"],
+#personalTabEditModalOverlay .modal-content input[type="text"] {
+    width: 100%;
+    padding: 12px 15px;
+    border: 2px solid #d2b48c;
+    border-radius: 8px;
+    font-size: 1rem;
+    font-family: 'Courier Prime', monospace;
+    background: #fff;
+    color: #2c2416;
+    margin-bottom: 10px;
+    position: relative;
+    z-index: 1;
+    transition: all 0.3s ease;
+}
+
+#themeTypeEditModalOverlay .modal-content input[type="text"]:focus,
+#personalTabEditModalOverlay .modal-content input[type="text"]:focus {
+    outline: none;
+    border-color: #8b4513;
+    box-shadow: 0 0 0 2px rgba(139, 69, 19, 0.2);
+}
+
+#themeTypeIconGrid, #personalTabIconGrid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    padding: 10px;
+    background-color: rgba(210, 180, 140, 0.2);
+    border-radius: 8px;
+    border: 1px solid #d2b48c;
+    margin-bottom: 15px;
+    position: relative;
+    z-index: 1;
+    max-height: 150px;
+    overflow-y: auto;
+}
+
+#themeTypeIconGrid > div, #personalTabIconGrid > div {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    border: 2px solid transparent;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    background-color: #fff;
+}
+
+#themeTypeIconGrid > div:hover, #personalTabIconGrid > div:hover {
+    background-color: #e0d8c8;
+}
+
+#themeTypeIconGrid > div .fas, #personalTabIconGrid > div .fas {
+    font-size: 1.5em;
+    color: #633b06;
+}
+
+/* Estilo para ícone selecionado */
+#themeTypeIconGrid > div.selected, #personalTabIconGrid > div.selected {
+    border-color: #8b4513;
+    background-color: #f4f1e8;
+    box-shadow: 0 0 8px rgba(139, 69, 19, 0.4);
+    transform: scale(1.05);
+}
+
+
+#themeTypeColorPalette, #personalTabColorPalette {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    padding: 10px;
+    background-color: rgba(210, 180, 140, 0.2);
+    border-radius: 8px;
+    border: 1px solid #d2b48c;
+    margin-bottom: 20px;
+    position: relative;
+    z-index: 1;
+    justify-content: center;
+}
+
+#themeTypeColorPalette > div, #personalTabColorPalette > div {
+    width: 32px;
+    height: 32px;
+    border: 2px solid #fff;
+    border-radius: 50%;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+#themeTypeColorPalette > div:hover, #personalTabColorPalette > div:hover {
+    transform: scale(1.1);
+}
+
+/* Estilo para cor selecionada */
+#themeTypeColorPalette > div.selected, #personalTabColorPalette > div.selected {
+    border-color: #8b4513;
+    transform: scale(1.15);
+    box-shadow: 0 0 10px rgba(139, 69, 19, 0.5);
+}
+
+#themeTypeEditModalOverlay .modal-button-group,
+#personalTabEditModalOverlay .modal-button-group {
+    margin-top: 25px;
+}
+
+
+/* --- 5. Animações e Classes Utilitárias --- */
+
+/* Animação de 'spinner' de carregamento, versão pequena para botões. */
+.loading-small {
+    border: 2px solid #f3f3f3;
+    border-top: 2px solid #8b4513; /* Usa a cor do tema. */
+    border-radius: 50%;
+    width: 16px;
+    height: 16px;
+    animation: spin 1s linear infinite;
+    display: inline-block;
+}
+
+/* Animação de rotação para os spinners. */
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* Animação de "deslizar para cima" para a entrada do modal. */
+@keyframes slideInUp {
+    from {
+        transform: translateY(20px);
+        opacity: 0;
+    }
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}

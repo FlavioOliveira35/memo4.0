@@ -1,0 +1,575 @@
+/* ===================================================================================
+ * ARQUIVO DE ESTILOS PRINCIPAL (main.css)
+ * ===================================================================================
+ * Este arquivo contém os estilos globais e a maior parte do layout da aplicação.
+ * A estrutura segue uma abordagem de "componentes", onde cada seção principal
+ * da página (header, navbars, contêiner de notas) tem seu próprio bloco de estilos.
+ *
+ * Seções:
+ * 1. Reset e Estilos Globais do Body
+ * 2. Layout Principal e Telas
+ * 3. Cabeçalho (Header) e Barra Superior (Top Bar)
+ * 4. Navegação Principal e Dropdown de Categorias
+ * 5. Barras de Navegação (Navbars) e Carrossel
+ * 6. Botão de Ação Flutuante (FAB)
+ * 7. Contêiner de Notas
+ * 8. Estilos Específicos para Mobile
+ * 9. Estilos do Painel de Administração (Layout Básico)
+ * 10. Classes Utilitárias e Animações
+ * =================================================================================== */
+
+
+/* --- 1. Reset e Estilos Globais do Body --- */
+
+/* Reset básico para garantir consistência entre navegadores. */
+* {
+    box-sizing: border-box; /* Garante que padding e border não afetem a largura/altura final do elemento. */
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    /* Fundo com gradientes radiais para uma textura sutil. */
+    background-image: radial-gradient(circle at 20% 50%, rgba(120,119,108,0.3) 0%, transparent 50%), radial-gradient(circle at 80% 20%, rgba(120,119,108,0.3) 0%, transparent 50%), radial-gradient(circle at 40% 80%, rgba(120,119,108,0.2) 0%, transparent 50%);
+    color: #333;
+    line-height: normal;
+    min-height: 100vh; /* Garante que o body ocupe pelo menos a altura total da tela. */
+    justify-content: center;
+    align-items: center;
+    overflow-x: hidden; /* Previne a rolagem horizontal na página inteira. */
+}
+
+
+/* --- 2. Layout Principal e Telas --- */
+
+/* As "telas" (login, app, admin) são divs que ocupam todo o espaço e são mostradas/ocultas via JS. */
+.screen {
+    display: none; /* Por padrão, todas as telas são ocultas. */
+    width: 100%;
+    min-height: 100vh;
+    flex-direction: column;
+    align-items: center;
+}
+
+/* A classe 'active' é adicionada via JS para mostrar a tela desejada. */
+.screen.active {
+    display: flex;
+}
+
+/* Estilo específico para a tela principal da aplicação. */
+#appScreen {
+    background: #f4f1e8;
+    width: 100%;
+    margin: 0px;
+    min-height: 100vh;
+    position: absolute;
+}
+
+
+/* --- 3. Cabeçalho (Header) e Barra Superior (Top Bar) --- */
+
+header {
+    position: fixed; /* Mantém o cabeçalho no topo da tela durante a rolagem. */
+    top: 0;
+    left: 0;
+    width: 100%;
+    z-index: 1001; /* Garante que o cabeçalho fique acima do conteúdo da página. */
+    padding: 0;
+    background: #8B4513; /* Cor de madeira escura, tema principal. */
+    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+    border-bottom: none;
+}
+
+.top-bar {
+    display: flex;
+    justify-content: space-between; /* Alinha itens nas extremidades. */
+    align-items: center; /* Alinha itens verticalmente ao centro. */
+    padding: 10px 20px;
+    background-color: #8B4513;
+    color: #f4f1e8;
+    border-bottom: 1px solid #654321; /* Linha sutil para separar do resto do header. */
+}
+
+.logo-area {
+    display: flex;
+    align-items: center;
+    flex-grow: 1; /* Permite que a área do logo cresça e ocupe o espaço disponível. */
+}
+
+#appName {
+    font-size: 1.5rem;
+    font-weight: 700;
+    font-family: 'Courier Prime', monospace;
+    color: #f4f1e8;
+}
+
+#appName i {
+    margin-right: 8px;
+}
+
+/* Contêiner para o menu que se adapta em telas menores. */
+.collapsible-menu {
+    display: flex;
+    align-items: center;
+    flex-grow: 1;
+}
+
+.main-nav {
+    display: flex;
+    align-items: center;
+    flex-grow: 1;
+    justify-content: right; /* Alinha o conteúdo da navegação à direita. */
+    padding-right: 15px;
+}
+
+/* Botão hambúrguer, visível apenas em telas mobile. */
+.hamburger-btn {
+    display: none;
+    background: none;
+    border: none;
+    color: #f4f1e8;
+    font-size: 1.5rem;
+    cursor: pointer;
+    padding: 5px 10px;
+}
+
+
+/* --- 4. Navegação Principal e Dropdown de Categorias --- */
+
+.category-dropdown {
+    position: relative; /* Necessário para posicionar o .dropdown-content. */
+    display: inline-block;
+}
+
+.category-dropdown .dropdown-btn {
+    background-color: #A0522D;
+    color: white;
+    padding: 8px 12px;
+    font-size: 0.8rem;
+    font-family: 'Courier Prime', monospace;
+    border: none;
+    cursor: pointer;
+    border-radius: 5px;
+    transition: background-color 0.3s ease;
+    display: flex;
+    align-items: center;
+}
+
+.category-dropdown .dropdown-btn .btn-text {
+    text-transform: uppercase;
+}
+
+.category-dropdown .dropdown-btn:hover {
+    background-color: #654321;
+}
+
+.category-dropdown .dropdown-btn i {
+    margin-left: 6px;
+}
+
+/* O conteúdo do dropdown, que aparece no hover. */
+.category-dropdown .dropdown-content {
+    display: none; /* Oculto por padrão. */
+    position: absolute; /* Posicionado em relação ao .category-dropdown. */
+    background-color: #f9f6f0;
+    min-width: 230px;
+    box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+    z-index: 1005; /* z-index alto para ficar sobre todo o conteúdo. */
+    border-radius: 5px;
+    border: 1px solid #8B4513;
+    margin-top: 0px;
+    left: 100%; /* Posiciona o dropdown à direita do botão. */
+    transform: translateX(-50%); /* Centraliza o dropdown em relação ao botão. */
+}
+
+.category-dropdown .dropdown-content a {
+    color: #2c2416;
+    padding: 10px 15px;
+    text-decoration: none;
+    display: block;
+    font-family: 'Courier Prime', monospace;
+    font-size: 0.7rem;
+    border-bottom: 1px solid #e0d8c8;
+}
+
+.category-dropdown .dropdown-content a:last-child {
+    border-bottom: none;
+}
+
+.category-dropdown .dropdown-content a:hover {
+    background-color: #e0d8c8;
+}
+
+/* Estilo especial para o link de "Gerenciar Temas". */
+.category-dropdown .dropdown-content a.manage-themes-link {
+    font-weight: bold;
+    color: #654321;
+    background-color: #e0d8c8;
+}
+
+.category-dropdown .dropdown-content a.manage-themes-link:hover {
+    background-color: #d2b48c;
+}
+
+/* Mostra o dropdown quando o mouse passa sobre o contêiner .category-dropdown. */
+.category-dropdown:hover .dropdown-content {
+    display: block;
+}
+
+/* Contêiner para os botões de ação do usuário (Premium, Admin, Sair). */
+.user-actions {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.user-actions button, .user-actions .auth-button {
+    background: #A0522D;
+    color: white;
+    border: none;
+    padding: 8px 12px;
+    font-size: 0.8rem;
+    font-family: 'Courier Prime', monospace;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    text-transform: uppercase;
+}
+
+.user-actions button:hover, .user-actions .auth-button:hover {
+    background-color: #654321;
+}
+
+/* Overrides para botões específicos com !important para garantir a precedência. */
+/* SUGESTÃO: O uso de `!important` deve ser evitado sempre que possível. Uma alternativa seria usar seletores mais específicos. */
+#headerPremiumButton {
+    background: #b08d57 !important;
+    border: 1px solid #9a7947 !important;
+}
+
+#headerPremiumButton:hover {
+    background: #9a7947 !important;
+}
+
+#adminPanelButton {
+    background: #6d4115 !important;
+    border: 1px solid #573310 !important;
+}
+
+#adminPanelButton:hover {
+    background: #573310 !important;
+}
+
+
+/* --- 5. Barras de Navegação (Navbars) e Carrossel --- */
+
+/* O 'wrapper' é o contêiner que permite o posicionamento relativo das setas do carrossel. */
+.navbar-wrapper {
+    position: relative;
+    width: 100%;
+    background: #a0522d;
+    padding-top: 2px;
+    padding-bottom: 2px;
+    border-bottom: 1px solid #654321;
+}
+
+/* A navbar em si é um contêiner flex que permite a rolagem horizontal. */
+.navbar {
+    display: flex;
+    overflow-x: auto; /* Habilita a rolagem horizontal. */
+    background: transparent;
+    padding: 10px 15px;
+    gap: 8px;
+    scroll-padding-left: 15px;
+    scroll-snap-type: x mandatory; /* Ajuda a "travar" em um item ao rolar. */
+    justify-content: flex-start; /* Começa a alinhar os itens da esquerda. */
+    /* Oculta visualmente a barra de rolagem em diferentes navegadores. */
+    scrollbar-width: none; /* Firefox */
+    -ms-overflow-style: none; /* IE e Edge */
+}
+
+/* Oculta a barra de rolagem em navegadores baseados em WebKit (Chrome, Safari). */
+.navbar::-webkit-scrollbar {
+    display: none;
+}
+
+/* Estilos para as setas de navegação do carrossel. */
+.scroll-arrow {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%); /* Centraliza verticalmente. */
+    background-color: rgba(101, 67, 33, 0.7);
+    color: #f4f1e8;
+    border: none;
+    border-radius: 50%;
+    width: 30px;
+    height: 30px;
+    font-size: 1rem;
+    cursor: pointer;
+    z-index: 10; /* Garante que fiquem sobre a navbar. */
+    transition: background-color 0.3s ease, opacity 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.scroll-arrow:hover {
+    background-color: rgba(101, 67, 33, 1); /* Fica mais opaco no hover. */
+}
+
+.scroll-arrow.left-arrow { left: 5px; }
+.scroll-arrow.right-arrow { right: 5px; }
+
+/* Classe para ocultar as setas via JS quando a rolagem não é necessária. */
+.scroll-arrow.hidden {
+    opacity: 0;
+    pointer-events: none; /* Impede que a seta oculta seja clicável. */
+}
+
+/* Estilos para os botões (abas) dentro das navbars. */
+#navbarWrapper .navbar button, #secondaryNavbarWrapper .navbar button {
+    position: relative;
+    background: #d2b48c;
+    color: #2c2416;
+    border: 2px solid #8b4513;
+    border-radius: 8px;
+    white-space: nowrap; /* Impede que o texto do botão quebre linha. */
+    min-width: max-content;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-family: 'Courier Prime', monospace;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    scroll-snap-align: start; /* Alinhamento para o scroll-snap. */
+    font-size: 0.75rem;
+    padding: 6px 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+#navbarWrapper .navbar button i, #secondaryNavbarWrapper .navbar button i {
+    margin-right: 5px;
+}
+
+/* Estilo para a aba ativa e para o hover. */
+#navbarWrapper .navbar button:hover,
+#navbarWrapper .navbar button.active-tab,
+#secondaryNavbarWrapper .navbar button:hover,
+#secondaryNavbarWrapper .navbar button.active-tab {
+    background: #f4f1e8;
+    color: #8b4513;
+    border-color: #654321;
+    transform: translateY(-1px); /* Efeito sutil de "levantar". */
+    box-shadow: 0 3px 8px rgba(0,0,0,0.2);
+}
+
+/* Badge para contagem de notas em cada aba. */
+.navbar button .badge {
+    position: absolute;
+    top: -6px;
+    right: -6px;
+    z-index: 1002;
+    background: #6e3c0e;
+    color:white;
+    font-size: 0.6rem;
+    min-width: 18px;
+    height: 18px;
+    text-align: center;
+    line-height: 18px;
+    border-radius: 50%;
+    display: none; /* Oculto por padrão, mostrado via JS se a contagem for > 0. */
+    box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+    border: 1px solid #f4f1e8;
+}
+
+
+/* --- 6. Botão de Ação Flutuante (FAB) --- */
+
+.floating-add-btn {
+    position: fixed; /* Fixo na tela, independente da rolagem. */
+    bottom: 30px;
+    right: 30px;
+    width: 60px;
+    height: 60px;
+    background: #5e2f0d;
+    color: white;
+    border: 3px solid #bd692d;
+    border-radius: 50%;
+    font-size: 1.5rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 6px 20px rgba(17,17,17,0.5);
+    z-index: 1000;
+    font-family: 'Courier Prime', monospace;
+}
+
+/* Animação de troca de ícone no hover. */
+.floating-add-btn .icon-plus, .floating-add-btn .icon-brain {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%,-50%);
+    transition: opacity 0.2s ease-in-out;
+}
+
+.floating-add-btn .icon-brain {
+    display: none;
+}
+
+.floating-add-btn:hover {
+    background: #814215;
+    transform: scale(1.1) rotate(180deg);
+    box-shadow: 0 8px 25px rgba(60,129,75,0.4);
+}
+
+.floating-add-btn:hover .icon-plus { display: none; }
+.floating-add-btn:hover .icon-brain { display: inline-block; }
+
+
+/* --- 7. Contêiner de Notas --- */
+
+#memoryUsageDisplayContainer {
+    font-family: 'Courier Prime', monospace;
+    font-size: 0.75rem;
+    color: #f0eada;
+    background-color: transparent !important;
+    border: none !important;
+    padding: 0 !important;
+    margin: 0;
+    margin-left: 15px;
+    text-align: left;
+    align-self: center;
+}
+
+.notes-container {
+    margin-top: 200px; /* Espaço para o cabeçalho fixo. */
+    display: flex;
+    flex-wrap: wrap; /* Permite que as notas quebrem para a próxima linha. */
+    gap: 15px;
+    margin: 15px;
+    padding: 10px;
+    justify-content: center; /* Centraliza as notas no contêiner. */
+    align-items: flex-start; /* Alinha as notas no topo. */
+    margin-top: 140px; /* Ajuste fino da margem superior. */
+}
+
+
+/* --- 8. Estilos Específicos para Mobile --- */
+
+#mobilePessoaisBtn {
+    display: none; /* Oculto por padrão, visível em telas menores via @media query. */
+    background: none;
+    border: none;
+    color: #f4f1e8;
+    font-size: 1.4rem;
+    cursor: pointer;
+    padding: 5px;
+    margin-right: 10px;
+}
+
+#mobileRightActionColumn {} /* Contêiner para botões de ação na direita em mobile. */
+
+.mobile-category-icon-btn {
+    background-color: #A0522D;
+    color: white;
+    width: 35px;
+    height: 35px;
+    border-radius: 50%;
+    border: 1px solid #654321;
+    font-size: 1rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    transition: background-color 0.3s ease;
+}
+
+.mobile-category-icon-btn:hover {
+    background-color: #8B4513;
+}
+
+
+/* --- 9. Estilos do Painel de Administração (Layout Básico) --- */
+/* NOTA: A maior parte dos estilos do admin está em `admin_dashboard.css`. */
+/* Estes são apenas overrides ou estilos básicos. */
+
+#adminScreen {
+    background-color: #f0f4f8;
+    color: #333;
+}
+
+/* ... (restante dos estilos do admin) ... */
+
+
+/* --- 10. Classes Utilitárias e Animações --- */
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+/* Animação de 'spinner' para feedback de carregamento. */
+.loading {
+    display: inline-block;
+    width: 16px;
+    height: 16px;
+    border: 2px solid rgba(255,255,255,.3);
+    border-radius: 50%;
+    border-top-color: #fff;
+    animation: spin 1s ease-in-out infinite;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+/* Classe utilitária para ocultar elementos de forma robusta. */
+.hidden {
+    display: none !important;
+}
+
+.text-center {
+    text-align: center;
+}
+
+/* Contêiner para customizações futuras de notas baseadas em tema. */
+#themeNoteCustomization {
+    display: none;
+    padding: 12px;
+    background: rgba(210,180,140,0.2);
+    border-radius: 8px;
+    margin-bottom: 12px;
+    border: 1px solid #d2b48c;
+    position: relative;
+    z-index: 1;
+}
+
+/* Botão para gerar resumo. */
+.summary-btn {
+    background-color: #A0522D;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    padding: 8px 12px;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-left: 10px;
+}
+
+.summary-btn:hover {
+    background-color: #654321;
+}

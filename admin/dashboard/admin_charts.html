@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<!--
+===================================================================================
+PAINEL DE ADMINISTRAÇÃO - GRÁFICOS E ANÁLISES
+===================================================================================
+Esta página é dedicada à visualização de dados através de gráficos e tabelas,
+oferecendo uma visão mais aprofundada do que o dashboard principal.
+
+Estrutura:
+- <head>: Importa dependências, incluindo a biblioteca Chart.js e um plugin
+           adicional (datalabels) para exibir valores dentro dos gráficos.
+- <body>:
+  - <header>: Cabeçalho simples com título e botão para voltar.
+  - Mensagens de Estado: Divs para feedback de carregamento e acesso negado.
+  - #filtersSection: Contêiner para os filtros de data e tipo de visualização.
+  - #chartsMainContainer: O contêiner principal onde todos os gráficos e tabelas
+    são renderizados dinamicamente pelo JavaScript.
+    - .admin-charts-grid: Um grid CSS que organiza os contêineres de gráficos.
+    - .chart-container / .table-container / .kpi-container:
+      Cada um desses é um "card" que contém um gráfico (<canvas>), uma tabela,
+      ou um indicador chave de performance (KPI).
+  - #adminSettingsSection: Seção para configurações globais, como ativar/desativar
+    notificações.
+  - <script src="admin_charts.js">: O script que controla toda a lógica desta página.
+===================================================================================
+-->
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Gráficos Administrativos - Minhas Memórias</title>
+
+    <!-- === DEPENDÊNCIAS DE TERCEIROS === -->
+    <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
+    <!-- Chart.js: Biblioteca principal para renderização de gráficos. -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Chart.js Datalabels Plugin: Para exibir valores diretamente nas fatias/barras dos gráficos. -->
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0/dist/chartjs-plugin-datalabels.min.js"></script>
+
+    <!-- Ícones e Fontes -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Courier+Prime:wght@400;700&family=Typewriter&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&family=Open+Sans:wght@400;600;700&display=swap" rel="stylesheet">
+
+    <!-- Folha de estilos específica para esta página. -->
+    <link rel="stylesheet" href="admin_charts.css">
+</head>
+<body>
+    <header>
+        <h1><i class="fas fa-chart-bar"></i> Gráficos e Análises Administrativas</h1>
+        <button onclick="goBackToAdminPanel()"><i class="fas fa-arrow-left"></i> Voltar ao Painel</button>
+    </header>
+
+    <!-- Mensagens de feedback para o usuário, controladas via JS. -->
+    <div id="loadingMessage" style="display: none;"><i class="fas fa-spinner fa-spin"></i> Carregando dados...</div>
+    <div id="accessDeniedMessage" style="display: none;"><i class="fas fa-exclamation-triangle"></i> Acesso Negado. Você precisa ser administrador para ver esta página.</div>
+
+    <!-- Seção de Filtros -->
+    <section id="filtersSection" class="filters-section" style="display: none;">
+        <h2 style="text-align: center; margin-top: 0; margin-bottom: 15px; font-family: 'Courier Prime', monospace; color: #2c3e50;">Filtros de Visualização</h2>
+        <div class="filters-grid">
+            <div>
+                <label for="viewTypeSelect">Tipo de Visualização (Evolutivos):</label>
+                <select id="viewTypeSelect">
+                    <option value="monthly" selected>Mensal</option>
+                    <option value="daily">Diário</option>
+                </select>
+            </div>
+            <div>
+                <label for="filterYear">Ano:</label>
+                <input type="number" id="filterYear" placeholder="AAAA" min="2020">
+            </div>
+            <div>
+                <label for="filterMonth">Mês:</label>
+                <select id="filterMonth">
+                    <option value="">Todos</option>
+                    <option value="1">Janeiro</option>
+                    <!-- ... outros meses ... -->
+                    <option value="12">Dezembro</option>
+                </select>
+            </div>
+            <div>
+                <label for="filterDay">Dia:</label>
+                <input type="number" id="filterDay" placeholder="DD" min="1" max="31" disabled>
+            </div>
+            <div>
+                <button id="applyFiltersButton"><i class="fas fa-filter"></i> Aplicar</button>
+                <button id="resetFiltersButton" style="margin-left: 10px;"><i class="fas fa-undo"></i> Limpar</button>
+            </div>
+        </div>
+    </section>
+
+    <!-- Contêiner principal para todos os gráficos e tabelas. -->
+    <main id="chartsMainContainer" class="charts-main-container" style="display: none;">
+        <div class="admin-charts-grid">
+
+            <!-- Bloco 1: Métricas de Usuários -->
+            <div class="chart-container pizza-chart-container">
+                <h3>Distribuição de Usuários (Free vs. Premium)</h3>
+                <canvas id="userStatusChart"></canvas>
+            </div>
+            <div class="chart-container">
+                <h3>Evolutivo de Usuários Cadastrados (Mensal Acumulado)</h3>
+                <canvas id="usersEvolutionChart"></canvas>
+            </div>
+            <div class="chart-container">
+                <h3>Novos Usuários Cadastrados (Mensal)</h3>
+                <canvas id="newUsersMonthlyChart"></canvas>
+            </div>
+            <div class="chart-container">
+                <h3>Novos Usuários Cadastrados (Últimos 30 Dias)</h3>
+                <canvas id="newUsersDailyChart"></canvas>
+            </div>
+            <div class="table-container">
+                <h3>Últimos 10 Usuários Cadastrados</h3>
+                <table id="latestUsersTable"><thead><tr><th>Email</th><th>Data Cadastro</th><th>Status</th></tr></thead><tbody></tbody></table>
+            </div>
+
+            <!-- Bloco 2: Métricas de Post-its -->
+            <div class="kpi-container">
+                <h3>Média de Memórias por Usuário</h3>
+                <div id="avgPostitsPerUser" class="kpi-value">-</div>
+            </div>
+            <div class="chart-container">
+                <h3>Evolutivo Mensal de Memórias Criadas (Acumulado)</h3>
+                <canvas id="postitsEvolutionChart"></canvas>
+            </div>
+            <div class="chart-container">
+                <h3>Novos Post-its Criados (Mensal)</h3>
+                <canvas id="newPostitsMonthlyChart"></canvas>
+            </div>
+            <div class="chart-container">
+                <h3>Novas Memórias Criadas (Últimos 30 Dias)</h3>
+                <canvas id="newPostitsDailyChart"></canvas>
+            </div>
+             <div class="chart-container pizza-chart-container">
+                <h3>Distribuição de Memórias por Vencimento</h3>
+                <canvas id="postitDueDateStatusChart"></canvas>
+            </div>
+            <div class="table-container">
+                <h3>Top 10 Usuários por Nº de Memórias</h3>
+                <table id="topUsersByPostitsTable"><thead><tr><th>Email</th><th>Nº Memórias</th></tr></thead><tbody></tbody></table>
+            </div>
+
+            <!-- Bloco 3: Métricas de Engajamento com Funcionalidades -->
+            <div class="chart-container">
+                <h3>Tipos de Tema Mais Criados (Top 10)</h3>
+                <canvas id="themeTypesPopularityChart"></canvas>
+            </div>
+            <div class="chart-container">
+                <h3>Abas Pessoais Mais Populares (Top 10 por Nº de Notas)</h3>
+                <canvas id="personalTabsPopularityChart"></canvas>
+            </div>
+            <div class="chart-container pizza-chart-container">
+                <h3>Cores de Memórias Mais Usadas (Abas Pessoais)</h3>
+                <canvas id="personalTabColorsChart"></canvas>
+            </div>
+            <div class="chart-container pizza-chart-container">
+                <h3>Cores de Memórias Mais Usadas (Tipos de Tema)</h3>
+                <canvas id="themeTypeColorsChart"></canvas>
+            </div>
+            <div class="chart-container">
+                <h3>Ícones Mais Usados (Abas Pessoais - Top 10)</h3>
+                <canvas id="personalTabIconsChart"></canvas>
+            </div>
+            <div class="chart-container">
+                <h3>Ícones Mais Usados (Tipos de Tema - Top 10)</h3>
+                <canvas id="themeTypeIconsChart"></canvas>
+            </div>
+            <div class="table-container">
+                <h3>Nomes de Subtemas Mais Recorrentes (Top 10)</h3>
+                <table id="recurringThemeNamesTable"><thead><tr><th>Nome do Subtema</th><th>Contagem</th></tr></thead><tbody></tbody></table>
+            </div>
+        </div>
+
+        <hr class="admin-divider" style="margin-top: 25px;">
+
+        <!-- Seção de Configurações Gerais do Admin -->
+        <div id="adminSettingsSection" class="settings-section">
+            <h2><i class="fas fa-cogs"></i> Configurações Gerais</h2>
+            <div class="setting-item">
+                <h3>Notificações Premium</h3>
+                <p>Ativar ou desativar o envio de notificações de lembrete para usuários Premium.</p>
+                <!-- Interruptor (toggle switch) para controle booleano. -->
+                <label class="switch">
+                    <input type="checkbox" id="notificationsToggle">
+                    <span class="slider round"></span>
+                </label>
+                <span id="notificationStatusText" style="margin-left: 15px; font-weight: bold;"></span>
+            </div>
+        </div>
+    </main>
+
+    <!-- Script com a lógica da página de gráficos. `defer` garante que o HTML seja carregado primeiro. -->
+    <script src="admin_charts.js" defer></script>
+</body>
+</html>

@@ -1,0 +1,532 @@
+/* Conteúdo extraído de admin_charts.html <style> */
+body {
+    font-family: 'Open Sans', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: #0c0a08;
+    color: #4E342E;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    min-height: 100vh;
+}
+
+header {
+    background-color: #070a0e;
+    color: white;
+    padding: 15px 25px;
+    width: 100%;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    box-sizing: border-box;
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+}
+
+header h1 {
+    margin: 0;
+    font-family: 'Lato', 'Courier Prime', monospace;
+    font-size: 1.7rem;
+    font-weight: 700;
+    color: #ff0404;
+}
+
+header {
+    /* Estilo do header já estava correto com a paleta avermelhada */
+    background-color: #0e0000;
+    color: #fc0202;
+}
+
+header button {
+    /* Estilo do botão do header já estava correto */
+    background-color: transparent;
+    color: #ffffff;
+    border: none;
+    padding: 8px 15px;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+    font-family: 'Open Sans', 'Courier Prime', monospace;
+    font-weight: 600;
+}
+
+header button:hover {
+    /* Estilo do hover do botão já estava correto */
+    background-color: #c97068;
+}
+
+.charts-main-container {
+    padding: 25px;
+    max-width: 1600px;
+    width: 100%;
+    margin: 20px auto;
+    box-sizing: border-box;
+}
+
+.admin-charts-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(380px, 1fr));
+    gap: 25px;
+}
+
+.chart-container,
+.table-container,
+.kpi-container {
+    background-color: #FFFFFF;
+    /* Fundo branco para os containers */
+    position: relative;
+    border: 1px solid #ff0505;
+    /* Borda Bege Acinzentado Claro */
+    border-radius: 10px;
+    padding: 20px;
+    box-shadow: 0 1px 3px rgba(78, 52, 46, 0.07), 0 1px 2px rgba(78, 52, 46, 0.1);
+    /* Sombra com tom marrom */
+    transition: transform 0.2s ease-out, box-shadow 0.2s ease-out;
+}
+
+.chart-container:hover,
+.table-container:hover,
+.kpi-container:hover {
+    transform: translateY(-6px);
+    /* Aumentar um pouco o levantamento */
+    /* A sombra de hover agora será a base para a animação neon, mas mais forte.
+       A animação neon-blue-pulse já inclui sombras. No hover, vamos torná-las mais pronunciadas
+       ou adicionar uma camada de sombra de profundidade mais escura e colorida.
+       Para manter a animação neon e adicionar profundidade, a animação precisa ser definida
+       de forma que a sombra base dela possa ser intensificada ou complementada no hover.
+       Uma abordagem mais simples é ter uma sombra estática forte no hover que se sobrepõe
+       ou substitui a sombra base da animação neon.
+       Vamos tentar uma sombra de profundidade mais forte e colorida que coexista com a animação neon.
+       A animação neon-blue-pulse já tem uma sombra base marrom. Vamos intensificar essa parte no hover,
+       e talvez adicionar uma camada extra.
+    */
+    box-shadow:
+        /* Sombras da animação neon-blue-pulse (serão sobrepostas pela animação se ela continuar no hover) */
+        /* + Sombra de profundidade mais forte e colorida no hover */
+        0 8px 16px rgba(183, 28, 28, 0.2),
+        /* Vermelho escuro translúcido para profundidade */
+        0 4px 10px rgba(78, 52, 46, 0.15);
+    /* Marrom um pouco mais intenso */
+    /* As camadas de brilho neon da animação continuarão por cima se a animação não for pausada/removida no hover */
+    /* Para garantir que a sombra de profundidade seja visível sob o neon, a animação @keyframes já inclui uma sombra base. */
+    /* Apenas aumentaremos a sombra de profundidade aqui. */
+    /* Se a animação já define a box-shadow completa, o :hover sobrescreverá a animação se não for cuidadoso. */
+    /* A animação aplica-se à propriedade box-shadow. O :hover também. */
+    /* Para manter a animação e ter uma sombra de profundidade diferente no hover, */
+    /* a animação não deve definir a sombra de profundidade, ou o hover deve pausar/sobrescrever a animação. */
+    /* Simplificação: A animação neon-blue-pulse já tem uma sombra base. */
+    /* No hover, a transition da box-shadow para uma mais forte pode brigar com a animação. */
+    /* Vamos deixar a animação neon continuar e apenas adicionar/intensificar a sombra de profundidade. */
+    /* No entanto, a animação já define toda a box-shadow. */
+    /* SOLUÇÃO MAIS SIMPLES: Remover a animação no hover e aplicar uma sombra forte + brilho estático. */
+    animation: none;
+    /* Pausa a animação neon no hover */
+    box-shadow:
+        0 0 10px rgba(241, 92, 92, 0.8),
+        /* Brilho ciano estático forte */
+        0 0 20px rgba(173, 4, 4, 0.6),
+        /* Brilho azul estático forte */
+        0 8px 20px rgba(183, 28, 28, 0.25),
+        /* Sombra de profundidade vermelha */
+        0 4px 12px rgba(78, 52, 46, 0.18);
+    /* Sombra de profundidade marrom */
+}
+
+@keyframes neon-blue-pulse {
+    0% {
+        box-shadow:
+            0 0 5px rgba(233, 119, 119, 0.7),
+            /* Ciano Brilhante */
+            0 0 10px rgba(245, 47, 47, 0.5),
+            0 0 15px rgba(116, 2, 2, 0.3),
+            inset 0 0 5px rgba(0, 229, 255, 0.3),
+            0 1px 3px rgba(78, 52, 46, 0.07),
+            /* Sombra base marrom sutil */
+            0 1px 2px rgba(78, 52, 46, 0.1);
+    }
+
+    50% {
+        box-shadow:
+            0 0 8px rgba(255, 76, 76, 0.733),
+            /* Azul Elétrico mais suave */
+            0 0 16px rgba(141, 15, 15, 0.6),
+            0 0 24px rgba(61, 2, 2, 0.4),
+            inset 0 0 8px rgba(246, 41, 41, 0.4),
+            0 1px 3px rgba(78, 46, 46, 0.07),
+            0 1px 2px rgba(78, 52, 46, 0.1);
+    }
+
+    100% {
+        box-shadow:
+            0 0 5px rgba(255, 0, 0, 0.7),
+            /* Toque de Magenta/Roxo */
+            0 0 10px rgba(255, 0, 0, 0.5),
+            0 0 15px rgba(255, 0, 0, 0.3),
+            inset 0 0 5px rgba(255, 0, 0, 0.3),
+            0 1px 3px rgba(78, 52, 46, 0.07),
+            0 1px 2px rgba(78, 52, 46, 0.1);
+    }
+}
+
+.chart-container,
+.table-container,
+.kpi-container {
+    /* ... outras propriedades ... */
+    animation: neon-blue-pulse 3s infinite alternate ease-in-out;
+}
+
+
+.pizza-chart-container {
+    max-height: 280px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    /* Centraliza o conteúdo verticalmente */
+}
+
+.chart-container h3,
+.table-container h3,
+.kpi-container h3 {
+    text-align: center;
+    margin: 5px;
+    margin-bottom: 20px;
+    color: #4b1d1d;
+    /* Títulos dos containers em Vermelho Escuro */
+    font-size: 1.15rem;
+    font-family: 'Lato', 'Courier Prime', monospace;
+    font-weight: 700;
+    text-shadow: 1px 1px 3px rgba(78, 52, 46, 0.15);
+    /* Sombra de texto sutil */
+}
+
+.kpi-container .kpi-value {
+    font-size: 2rem;
+    font-weight: 700;
+    color: #4E342E;
+    /* KPI value em Marrom Escuro */
+    text-align: center;
+    margin-top: 10px;
+    font-family: 'Open Sans', sans-serif;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.85rem;
+}
+
+th,
+td {
+    border: 1px solid #D7CCC8;
+    /* Borda Bege Acinzentado Claro */
+    padding: 8px 10px;
+    text-align: left;
+}
+
+th {
+    background-color: #efebe9;
+    /* Fundo bege mais escuro para cabeçalho */
+    font-family: 'Open Sans', 'Courier Prime', monospace;
+    font-weight: 600;
+    color: #4E342E;
+    /* Texto Marrom Escuro para cabeçalho */
+}
+
+td {
+    font-family: 'Open Sans', sans-serif;
+    color: #6D4C41;
+    /* Texto Marrom Médio para dados */
+}
+
+#loadingMessage,
+#accessDeniedMessage {
+    text-align: center;
+    font-size: 1.2rem;
+    color: #6D4C41;
+    /* Marrom Médio */
+    padding: 50px;
+    width: 100%;
+    font-family: 'Open Sans', sans-serif;
+}
+
+#accessDeniedMessage {
+    color: #B71C1C;
+}
+
+/* Vermelho Escuro para Alerta */
+
+/* Estilos para a Seção de Filtros */
+.filters-section {
+    background-color: #FFFFFF;
+    padding: 20px 25px;
+    border-radius: 10px;
+    box-shadow: 0 1px 3px rgba(78, 52, 46, 0.07), 0 1px 2px rgba(78, 52, 46, 0.1);
+    margin-bottom: 25px;
+    max-width: 1600px;
+    width: calc(100% - 50px);
+    margin-left: auto;
+    margin-right: auto;
+    box-sizing: border-box;
+    border: 1px solid #D7CCC8;
+    /* Borda Bege Acinzentado Claro */
+}
+
+.filters-section h2 {
+    text-align: center;
+    margin-top: 0;
+    margin-bottom: 25px;
+    font-family: 'Lato', 'Courier Prime', monospace;
+    color: #B71C1C;
+    /* Título da seção em Vermelho Escuro */
+    font-size: 1.4rem;
+    font-weight: 700;
+}
+
+.filters-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 200px));
+    /* Limita largura máx dos itens */
+    gap: 15px 20px;
+    align-items: end;
+}
+
+.filters-grid div {
+    display: flex;
+    flex-direction: column;
+}
+
+.filters-grid label {
+    margin-bottom: 8px;
+    font-size: 0.88rem;
+    color: #6D4C41;
+    /* Labels em Marrom Médio */
+    font-weight: 600;
+    font-family: 'Open Sans', sans-serif;
+}
+
+.filters-grid select,
+.filters-grid input[type="number"] {
+    padding: 9px 12px;
+    border: 1px solid #D7CCC8;
+    /* Borda Bege Acinzentado Claro */
+    border-radius: 5px;
+    font-size: 0.9rem;
+    font-family: 'Open Sans', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    box-sizing: border-box;
+    width: 100%;
+    background-color: #fff;
+    color: #4E342E;
+    /* Texto dos inputs em Marrom Escuro */
+}
+
+.filters-grid input[type="number"]:focus,
+.filters-grid select:focus {
+    border-color: #800606;
+    /* Laranja Cenoura para foco */
+    outline: 0;
+    box-shadow: 0 0 0 0.2rem rgba(230, 126, 34, 0.25);
+    /* Sombra Laranja no foco */
+}
+
+.filters-grid input[type="number"]:disabled {
+    background-color: #F5EFE6;
+    /* Bege mais claro para desabilitado */
+    cursor: not-allowed;
+    color: #A1887F;
+    /* Texto Marrom Cinzento Claro para desabilitado */
+}
+
+.filters-grid button {
+    background-color: #fa2929;
+    /* Botões em Vermelho Médio */
+    color: white;
+    border: none;
+    padding: 8px 12px;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.2s ease, transform 0.2s ease;
+    /* Adicionado transform à transição */
+    font-family: 'Open Sans', 'Courier Prime', monospace;
+    font-size: 0.9rem;
+    font-weight: 600;
+    min-height: 38px;
+    line-height: 1.2;
+    white-space: nowrap;
+}
+
+.filters-grid button:hover {
+    background-color: #630404;
+    /* Hover para Vermelho Escuro */
+    transform: scale(1.03);
+    /* Leve aumento no hover */
+}
+
+.filters-grid button i {
+    margin-right: 5px;
+}
+
+/* Ajuste para o último div do grid que contém os botões, para que fiquem na mesma linha se possível */
+.filters-grid div:last-child {
+    flex-direction: row;
+    /* Botões na horizontal */
+    gap: 10px;
+    /* Espaço entre os botões */
+    align-items: flex-end;
+    /* Alinha os botões com a base dos outros inputs */
+}
+
+.filters-grid div:last-child button {
+    flex-grow: 1;
+    /* Faz os botões dividirem o espaço, se desejado */
+}
+
+
+@media (max-width: 1200px) {
+    .admin-charts-grid {
+        grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+    }
+}
+
+@media (max-width: 720px) {
+    .admin-charts-grid {
+        grid-template-columns: 1fr;
+    }
+
+    header h1 {
+        font-size: 1.3rem;
+    }
+
+    header button {
+        padding: 6px 10px;
+        font-size: 0.8rem;
+    }
+
+    .charts-main-container {
+        padding: 15px;
+    }
+
+    .admin-charts-grid {
+        gap: 15px;
+    }
+
+    .chart-container,
+    .table-container,
+    .kpi-container {
+        padding: 15px;
+    }
+
+    .chart-container h3,
+    .table-container h3,
+    .kpi-container h3 {
+        font-size: 1rem;
+        margin-bottom: 15px;
+    }
+}
+
+/* --- Seção de Configurações --- */
+.settings-section {
+    padding: 20px 25px;
+    background-color: #ffffff;
+    margin: 20px 0;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+    border: 1px solid #D7CCC8;
+}
+
+.settings-section h2 {
+    font-family: 'Courier Prime', monospace;
+    color: #B71C1C;
+    margin-top: 0;
+    border-bottom: 2px solid #ecf0f1;
+    padding-bottom: 10px;
+    font-size: 1.4rem;
+}
+
+.setting-item {
+    display: flex;
+    align-items: center;
+    padding: 15px 0;
+    border-bottom: 1px solid #f2f2f2;
+}
+
+.setting-item:last-child {
+    border-bottom: none;
+}
+
+.setting-item h3 {
+    margin: 0;
+    font-size: 1.1rem;
+    color: #4E342E;
+    flex-basis: 25%;
+}
+
+.setting-item p {
+    margin: 0 20px;
+    font-size: 0.9rem;
+    color: #6D4C41;
+    flex-grow: 1;
+}
+
+/* --- Estilos do Toggle Switch --- */
+.switch {
+    position: relative;
+    display: inline-block;
+    width: 60px;
+    height: 34px;
+    flex-shrink: 0;
+}
+
+.switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: #ccc;
+    -webkit-transition: .4s;
+    transition: .4s;
+}
+
+.slider:before {
+    position: absolute;
+    content: "";
+    height: 26px;
+    width: 26px;
+    left: 4px;
+    bottom: 4px;
+    background-color: white;
+    -webkit-transition: .4s;
+    transition: .4s;
+}
+
+input:checked + .slider {
+    background-color: #27ae60;
+}
+
+input:focus + .slider {
+    box-shadow: 0 0 1px #27ae60;
+}
+
+input:checked + .slider:before {
+    -webkit-transform: translateX(26px);
+    -ms-transform: translateX(26px);
+    transform: translateX(26px);
+}
+
+.slider.round {
+    border-radius: 34px;
+}
+
+.slider.round:before {
+    border-radius: 50%;
+}
